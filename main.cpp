@@ -5,57 +5,68 @@
 
 #include "mbed.h"
 
-int SEGMENTE [10] = {
-                      0b00111111,
-                      0b00000110,
-                      0b01011011,
-                      0b01001111,
-                      0b01100110,
-                      0b01101101,
-                      0b01111101,
-                      0b00000111,
-                      0b01111111,
-                      0b01101111
-                    };
+DigitalOut led(PC_0);
 
-PortOut segment(PortC, 0xFF);
+void a() {
+    InterruptIn key(PA_1);
 
-void anzeigen(int anzahl) {
-    segment = SEGMENTE [anzahl];
+    key.mode(PullDown);
+    key.fall([]() {
+        led = !led;
+    });
+    key.enable_irq();
 }
 
+void b() {
+    InterruptIn key(PA_1);
+
+    key.mode(PullDown);
+    key.rise([]() {
+        led = 1;
+    });
+    key.fall([]() {
+        led = 0;
+    });
+    key.enable_irq();
+}
+
+void c() {
+    InterruptIn key(PA_1);
+    InterruptIn key2(PA_1);
+
+    key.mode(PullDown);
+    key2.mode(PullDown);
+    key.fall([]() {
+        led = 1;
+    });
+    key2.fall([]() {
+        led = 0;
+    });
+    key.enable_irq();
+    key2.enable_irq();
+}
+
+void d() {
+
+}
 
 int main()
 {
-    DigitalOut einerstelle(PC_11);
+    PortOut leds(PortC, 0xFF);
+    leds = 0;
 
-    DigitalIn keyEntry(PA_1);
-    keyEntry.mode(PullDown);
+    InterruptIn up(PA_1);
+    InterruptIn down(PA_6);
 
-    DigitalIn keyOut(PA_6);
-    keyOut.mode(PullDown);
+    up.mode(PullDown);
+    down.mode(PullDown);
 
-    einerstelle = 1;
+    up.fall();
 
-    int parkingLots = 9;
+    up.enable_irq();
+    down.enable_irq();
 
-    anzeigen(parkingLots);
+    while(true) {
 
-    while (true) {
-        if (keyEntry) {
-            if (parkingLots > 0) {
-                anzeigen(--parkingLots);
-
-                while (keyEntry);
-            }
-        }
-
-        if (keyOut) {
-            if (parkingLots < 9) {
-                anzeigen(++parkingLots);
-
-                while (keyOut);
-            }
-        }
     }
 }
